@@ -1,37 +1,26 @@
 /*=====================================================================================================================
-======================================== LinnStrument Operating System v2.3.0 =========================================
+======================================== LinnStrument Operating System v2.3.4 =========================================
 =======================================================================================================================
 
-Operating System for the LinnStrument (c) music controller by Roger Linn Design (www.rogerlinndesign.com).
+Operating System for the LinnStrument (c) music controller by
+Roger Linn Design (https://www.rogerlinndesign.com).
 
-Written by Roger Linn and Geert Bevin (http://gbevin.com) with significant help by Tim Thompson (http://timthompson.com).
+Written by Roger Linn and Geert Bevin (https://www.uwyn.com) with significant
+help by Tim Thompson (https://timthompson.com).
 
-LinnStrument Operating System is licensed under a Creative Commons Attribution-ShareAlike 3.0 Unported License,
-viewable at <http://creativecommons.org/licenses/by-sa/3.0/>.
+Copyright 2023 Roger Linn Design (https://www.rogerlinndesign.com)
 
-You are free:
-1) to Share — to copy, distribute and transmit the work
-2) to Remix — to adapt the work
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
 
-Under the following conditions:
-1) Attribution — You must attribute the work in the manner specified by the author or licensor
-(but not in any way that suggests that they endorse you or your use of the work).
-2) Noncommercial — You may not use this work for commercial purposes.
-3) Share Alike — If you alter, transform, or build upon this work, you may distribute the resulting work
-only under the same or similar license to this one.
+    http://www.apache.org/licenses/LICENSE-2.0
 
-With the understanding that:
-1) Waiver — Any of the above conditions can be waived if you get permission from the copyright holder.
-2) Public Domain — Where the work or any of its elements is in the public domain under applicable law,
-that status is in no way affected by the license.
-3) Other Rights — In no way are any of the following rights affected by the license:
-      a) Your fair dealing or fair use rights, or other applicable copyright exceptions and limitations;
-      b) The author's moral rights;
-      c) Rights other persons may have either in the work itself or in how the work is used, such as
-      publicity or privacy rights.
-
-Notice — For any reuse or distribution, you must make clear to others the license terms of this work.
-The best way to do this is with a link to http://creativecommons.org/licenses/by-nc-sa/3.0/deed.en_US
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
 
 For any questions about this, contact Roger Linn Design at support@rogerlinndesign.com.
 
@@ -56,8 +45,8 @@ For any questions about this, contact Roger Linn Design at support@rogerlinndesi
 
 /******************************************** CONSTANTS ******************************************/
 
-const char* OSVersion = "230";
-const char* OSVersionBuild = ".065";
+const char* OSVersion = "234.";
+const char* OSVersionBuild = ".072";
 
 // SPI addresses
 #define SPI_LEDS    10               // Arduino pin for LED control over SPI
@@ -232,7 +221,7 @@ byte NUMROWS = 8;                    // number of touch sensor rows
 
 const unsigned short ccFaderDefaults[8] = {1, 2, 3, 4, 5, 6, 7, 8};
 
-const unsigned int LED_PATTERNS = 3;
+const int LED_PATTERNS = 3;
 
 // Two buffers of ...
 // A 26 by 8 byte array containing one byte for each LED:
@@ -409,6 +398,7 @@ struct NoteEntry {
   inline void setColRow(byte, byte);
   inline byte getCol();
   inline byte getRow();
+  inline boolean hasTouch();
 
   inline byte getNextNote();
   inline byte getNextChannel();
@@ -418,8 +408,8 @@ struct NoteEntry {
   inline void setPreviousChannel(byte);
 };
 struct NoteTouchMapping {
-  void initialize();                                         // initialize the mapping data
-  void releaseLatched(byte split);                           // release all the note mappings that are latched and have no real active touch
+  void initialize(byte mappedSplit);                         // initialize the mapping data
+  void releaseLatched();                                     // release all the note mappings that are latched and have no real active touch
   void noteOn(signed char, signed char, byte, byte);         // register the cell for which a note was turned on
   void noteOff(signed char, signed char);                    // turn off a note
   void changeCell(signed char, signed char, byte, byte);     // changes the cell of an active note
@@ -429,6 +419,7 @@ struct NoteTouchMapping {
 
   void debugNoteChain();
 
+  unsigned char split;
   unsigned short noteCount;
   byte musicalTouchCount[16];
   signed char firstNote;

@@ -1,7 +1,17 @@
 /********************************** ls_midi: LinnStrument MIDI ************************************
-This work is licensed under the Creative Commons Attribution-ShareAlike 3.0 Unported License.
-To view a copy of this license, visit http://creativecommons.org/licenses/by-sa/3.0/
-or send a letter to Creative Commons, PO Box 1866, Mountain View, CA 94042, USA.
+Copyright 2023 Roger Linn Design (https://www.rogerlinndesign.com)
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
 ***************************************************************************************************
 These are the MIDI functions for the LinnStrument
 **************************************************************************************************/
@@ -133,13 +143,13 @@ void handleMidiInput(unsigned long nowMicros) {
         midiMessageBytes = 1;
         midiMessageIndex = 1;
 
+        sequencersTurnOff(false);
+
         midiClockStatus = midiClockOff;
         midiClockMessageCount = 0;
         lastMidiClockTime = 0;
         initialMidiClockMessageCount = 0;
         resetClockAdvancement(nowMicros);
-
-        sequencersTurnOff(false);
         break;
       case MIDISongPositionPointer:
         midiMessageBytes = 3;
@@ -2846,8 +2856,21 @@ void midiSendMpeState(byte mainChannel, byte polyphony) {
 }
 
 void midiSendMpePitchBendRange(byte split) {
-  if (Split[split].mpe && getBendRange(split) == 48) {
-    midiSendRPN(0, 48 << 7, Split[split].midiChanMain);
+  if (Split[split].mpe) {
+    unsigned short pb_sens = getBendRange(split) << 7;
+    midiSendRPN(0, pb_sens, Split[split].midiChanMain);
+
+    byte polyphony = countMpePolyphony(split);
+    if (Split[split].midiChanMain == 1) {
+      for (byte ch = 1; ch <= polyphony; ++ch) {
+        midiSendRPN(0, pb_sens, Split[split].midiChanMain + ch);
+      }
+    }
+    else if (Split[split].midiChanMain == 16) {
+      for (byte ch = 1; ch <= polyphony; ++ch) {
+        midiSendRPN(0, pb_sens, Split[split].midiChanMain - ch);
+      }
+    }
   }
 }
 
